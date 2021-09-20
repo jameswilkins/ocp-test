@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caps-test
+spec:
+  selector:
+    matchLabels:
+      app: caps-test
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: caps-test
+        version: v0.0.1
+    spec:
+      serviceAccountName: caps-test
+      containers:
+        - name: kaniko
+          image: quay.io/jwilkinsrh/caps-test:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0 # it appears that if we don't set this to 0, the container cannot access its /kaniko directory...
+            capabilities:
+              drop:
+                - ALL
+          env:
+          volumeMounts:
+      volumes:
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: caps-test
