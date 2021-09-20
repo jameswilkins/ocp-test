@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kaniko
+spec:
+  selector:
+    matchLabels:
+      app: kaniko
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kaniko
+        version: v1.2.0
+    spec:
+      serviceAccountName: kaniko
+      containers:
+        - name: kaniko
+          image: gcr.io/kaniko-project/executor:debug # gcr.io/kaniko-project/executor:v1.6.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0 # it appears that if we don't set this to 0, the container cannot access its /kaniko directory...
+            capabilities:
+              drop:
+                - all
+          env:
+            - name: "DOCKER_CONFIG"
+              value: "/kaniko/.docker/" # this didn't exist in container: "/builder/home/.docker/"
+          command: [ "sleep" ]
+          args: [ "infinity" ]
+          volumeMounts:
+      volumes:
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kaniko
